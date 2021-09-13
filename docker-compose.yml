@@ -1,0 +1,42 @@
+version: '3.9'
+
+volumes:
+    database:
+
+networks:
+    default:
+        name: mizar
+
+services:
+    database:
+        container_name: mizar_db
+        image: postgres:13.4
+        restart: unless-stopped
+        environment:
+            - POSTGRES_DB=${DATABASE_NAME}
+            - POSTGRES_USER=${DATABASE_USER}
+            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+        volumes:
+            - database:/var/lib/postgresql/data
+
+    php:
+        container_name: mizar_app
+        build:
+            context: .docker/php
+        restart: unless-stopped
+        depends_on:
+            - database
+        volumes:
+            - ./:/app
+
+    nginx:
+        container_name: mizar_nginx
+        image: nginx:1.21.3
+        restart: unless-stopped
+        volumes:
+            - ./:/app
+            - .docker/nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - php
+        ports:
+            - "${APP_PORT:-80}:80"
