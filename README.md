@@ -12,7 +12,14 @@ With docker:
 
 ```bash
 docker-compose up -d
+docker-compose exec -T php composer install --no-interaction
+docker-compose exec -T php php ./bin/console cache:clear --no-warmup
+docker-compose exec -T php php ./bin/console cache:warmup
+docker-compose exec -T php php ./bin/console doctrine:migrations:migrate --no-interaction
 ```
+
+This will start all the required services (check docker-compose.yml for the list of services), clear cache & apply
+migrations.
 
 Without Docker:
 
