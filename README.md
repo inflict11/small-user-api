@@ -30,6 +30,6 @@ Without Docker:
 
 ## Run Application
 
-See application be URL: http://localhost:10000.
+See application be URL: [http://localhost:10000](http://localhost:10000).
 
 If port `10000` doesn't work, check `APP_PORT` variable in `.env` for the correct port.  
