@@ -54,6 +54,11 @@ class User
      */
     private $website;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
+     */
+    private $parent;
+
     public function __construct()
     {
         $this->createdDate = new \DateTime();
@@ -144,6 +149,18 @@ class User
     public function setWebsite(?Website $website): self
     {
         $this->website = $website;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): self
+    {
+        $this->parent = $parent;
 
         return $this;
     }

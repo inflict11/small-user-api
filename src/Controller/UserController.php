@@ -38,8 +38,27 @@ class UserController extends AbstractController
                 return new JsonResponse("$param field is required", 400);
             }
         }
+        if ($entityManager->getRepository(User::class)->findOneBy([
+            'email' => $data['email'],
+            'website' => $website
+        ])) {
+            return new JsonResponse("Duplicate email for this website", 400);
+        }
+        // TODO validate email, validate length
 
         $user = new User();
+        if (!empty($data['parentId'])) {
+            $parentUser = $entityManager->find(User::class, (int) $data['parentId']);
+            if (!$parentUser) {
+                return new JsonResponse("Invalid parentId: User " . $data['parentId']
+                    . " is not found", 400);
+            }
+            if ($parentUser->getParent()) {
+                return new JsonResponse("Invalid parentId: User " . $data['parentId']
+                    . " is child itself", 400);
+            }
+            $user->setParent($parentUser);
+        }
         $user->setFirstName($data['firstName']);
         $user->setLastName($data['lastName']);
         $user->setEmail($data['email']);
@@ -54,7 +73,8 @@ class UserController extends AbstractController
             'lastName' => $user->getLastName(),
             'email' => $user->getEmail(),
             'createdDate' => $user->getCreatedDate()->format(\DateTime::ISO8601),
-            'websiteId' => $user->getWebsite()->getId()
+            'websiteId' => $user->getWebsite()->getId(),
+            'parentId' => $user->getParent()?->getId()
         ];
 
         return new JsonResponse($result, 201, ["Content-Type" => "application/json;charset=UTF-8"]);
