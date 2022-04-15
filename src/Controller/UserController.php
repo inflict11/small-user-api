@@ -51,6 +51,9 @@ class UserController extends AbstractController
             if (empty($data[$param])) {
                 return new JsonResponse("$param field is required", 400);
             }
+            if (mb_strlen($data[$param]) > 255) {
+                return new JsonResponse("$param field should be <= 255 symbols", 400);
+            }
         }
         if ($entityManager->getRepository(User::class)->findOneBy([
             'email' => $data['email'],
@@ -58,7 +61,7 @@ class UserController extends AbstractController
         ])) {
             return new JsonResponse("Duplicate email for this website", 400);
         }
-        // TODO validate email, validate length
+        // TODO validate email
 
         $user = new User();
         if (!empty($data['parentId'])) {
@@ -127,9 +130,15 @@ class UserController extends AbstractController
             return new JsonResponse('Invalid json with parameters', 415);
         }
         if (!empty($data['firstName'])) {
+            if (mb_strlen($data['firstName']) > 255) {
+                return new JsonResponse("firstName field should be <= 255 symbols", 400);
+            }
             $user->setFirstName($data['firstName']);
         }
         if (!empty($data['lastName'])) {
+            if (mb_strlen($data['lastName']) > 255) {
+                return new JsonResponse("lastName field should be <= 255 symbols", 400);
+            }
             $user->setLastName($data['lastName']);
         }
         $user->setUpdatedDate(new \DateTime());

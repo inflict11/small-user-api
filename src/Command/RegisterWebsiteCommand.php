@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[AsCommand(
     name: 'app:register-website',
@@ -40,10 +41,19 @@ class RegisterWebsiteCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // TODO check or cut input strings to 255 symbols
         $name = $input->getArgument('name');
+        if ($name > 255) {
+            $output->writeln("name should be <= 255 symbols");
+
+            return Command::INVALID;
+        }
         // TODO validate url? (should begin with http/https)
         $url = $input->getArgument('url');
+        if ($url > 255) {
+            $output->writeln("url should be <= 255 symbols");
+
+            return Command::INVALID;
+        }
 
         $em = $this->getDoctrine()->getManager();
 
@@ -52,7 +62,7 @@ class RegisterWebsiteCommand extends Command
         $website->setUrl($url);
 
         $key = bin2hex(random_bytes(64));
-        // TODO Check uniqueness
+        // TODO Check uniqueness before saving
         $website->setApiKey($key);
 
         $em->persist($website);
