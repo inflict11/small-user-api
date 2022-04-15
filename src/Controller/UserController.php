@@ -20,7 +20,7 @@ class UserController extends AbstractController
             'lastName' => $user->getLastName(),
             'email' => $user->getEmail(),
             'createdDate' => $user->getCreatedDate()->format(\DateTime::ISO8601),
-            'updatedDate' => $user->getUpdatedDate()->format(\DateTime::ISO8601),
+            'updatedDate' => $user->getUpdatedDate()?->format(\DateTime::ISO8601),
             'websiteId' => $user->getWebsite()->getId(),
             'parentId' => $user->getParent()?->getId(),
         ];
@@ -98,7 +98,7 @@ class UserController extends AbstractController
             return new JsonResponse('Invalid authorization key', 403);
         }
         $user = $entityManager->find(User::class, $id);
-        if (!$user) {
+        if (!$user || !$user->getIsActive()) {
             return new JsonResponse('User not found', 404);
         }
 
@@ -123,7 +123,7 @@ class UserController extends AbstractController
             return new JsonResponse('User not found', 404);
         }
         $data = json_decode($request->getContent(), true);
-        if (!$data) {
+        if (!$user || !$user->getIsActive()) {
             return new JsonResponse('Invalid json with parameters', 415);
         }
         if (!empty($data['firstName'])) {
@@ -137,5 +137,31 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse($this->getUserArray($user), 200, ["Content-Type" => "application/json;charset=UTF-8"]);
+    }
+
+
+    #[Route('/user/{id}', name: 'delete_user', methods: ['DELETE'])]
+    public function deleteUser(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $apiKey = $request->headers->get('Authorization');
+        if (!$apiKey) {
+            return new JsonResponse('Authorization header is not found', 401);
+        }
+
+        $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
+        if (!$website) {
+            return new JsonResponse('Invalid authorization key', 403);
+        }
+        $user = $entityManager->find(User::class, $id);
+        if (!$user || !$user->getIsActive()) {
+            return new JsonResponse('User not found', 404);
+        }
+        $user->setIsActive(false);
+        $user->setDeletedDate(new \DateTime());
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse('', 204, ["Content-Type" => "application/json;charset=UTF-8"]);
     }
 }

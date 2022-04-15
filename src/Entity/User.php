@@ -59,6 +59,11 @@ class User
      */
     private $parent;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isActive = true;
+
     public function __construct()
     {
         $this->createdDate = new \DateTime();
@@ -161,6 +166,18 @@ class User
     public function setParent(?self $parent): self
     {
         $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getIsActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }
