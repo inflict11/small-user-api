@@ -40,6 +40,7 @@ class RegisterWebsiteCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // TODO check or cut input strings to 255 symbols
         $name = $input->getArgument('name');
         // TODO validate url? (should begin with http/https)
         $url = $input->getArgument('url');

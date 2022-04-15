@@ -54,6 +54,11 @@ class User
      */
     private $website;
 
+    public function __construct()
+    {
+        $this->createdDate = new \DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
