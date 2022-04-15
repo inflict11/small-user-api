@@ -41,14 +41,14 @@ class RegisterWebsiteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('name');
-        if ($name > 255) {
+        if (mb_strlen($name) > 255) {
             $output->writeln("name should be <= 255 symbols");
 
             return Command::INVALID;
         }
         // TODO validate url? (should begin with http/https)
         $url = $input->getArgument('url');
-        if ($url > 255) {
+        if (mb_strlen($url) > 255) {
             $output->writeln("url should be <= 255 symbols");
 
             return Command::INVALID;
