@@ -33,3 +33,20 @@ Without Docker:
 See application be URL: [http://localhost:10000](http://localhost:10000).
 
 If port `10000` doesn't work, check `APP_PORT` variable in `.env` for the correct port.  
+
+## Register new website and use API
+Run command 
+```bash
+docker-compose exec -T php php bin/console app:register-website "website name" "website url"
+```
+name and url have 255 symbols limit.
+
+Then you will get apiKey to use with your requests to API via setting it to "Authorization" header.
+
+While creating User, you need to set firstName, lastName, email (they all have 255 symbols limit), 
+also you can set parentId, its id of User without parent himself. Other than that is just like in the task.
+
+## Run unit tests
+```bash
+docker-compose exec -T php php bin/phpunit
+```
