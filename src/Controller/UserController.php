@@ -29,12 +29,12 @@ class UserController extends AbstractController
     #[Route('/user', name: 'create_user', methods: ['POST'])]
     public function createUser(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
         $apiKey = $request->headers->get('Authorization');
         if (!$apiKey) {
             return new JsonResponse('Authorization header is not found', 401);
         }
 
+        $entityManager = $doctrine->getManager();
         $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
         if (!$website) {
             return new JsonResponse('Invalid authorization key', 403);
@@ -90,12 +90,12 @@ class UserController extends AbstractController
     #[Route('/user/{id}', name: 'get_user', methods: ['GET'])]
     public function getUserEntity(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
         $apiKey = $request->headers->get('Authorization');
         if (!$apiKey) {
             return new JsonResponse('Authorization header is not found', 401);
         }
 
+        $entityManager = $doctrine->getManager();
         $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
         if (!$website) {
             return new JsonResponse('Invalid authorization key', 403);
@@ -111,11 +111,11 @@ class UserController extends AbstractController
     #[Route('/user/{id}', name: 'update_user', methods: ['PUT'])]
     public function updateUser(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
         $apiKey = $request->headers->get('Authorization');
         if (!$apiKey) {
             return new JsonResponse('Authorization header is not found', 401);
         }
+        $entityManager = $doctrine->getManager();
 
         $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
         if (!$website) {
@@ -152,12 +152,12 @@ class UserController extends AbstractController
     #[Route('/user/{id}', name: 'delete_user', methods: ['DELETE'])]
     public function deleteUser(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
         $apiKey = $request->headers->get('Authorization');
         if (!$apiKey) {
             return new JsonResponse('Authorization header is not found', 401);
         }
 
+        $entityManager = $doctrine->getManager();
         $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
         if (!$website) {
             return new JsonResponse('Invalid authorization key', 403);
