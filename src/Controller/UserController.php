@@ -12,6 +12,20 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
+    private function getUserArray(User $user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'email' => $user->getEmail(),
+            'createdDate' => $user->getCreatedDate()->format(\DateTime::ISO8601),
+            'updatedDate' => $user->getUpdatedDate()->format(\DateTime::ISO8601),
+            'websiteId' => $user->getWebsite()->getId(),
+            'parentId' => $user->getParent()?->getId(),
+        ];
+    }
+
     #[Route('/user', name: 'create_user', methods: ['POST'])]
     public function createUser(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
@@ -67,16 +81,61 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $result = [
-            'id' => $user->getId(),
-            'firstName' => $user->getFirstName(),
-            'lastName' => $user->getLastName(),
-            'email' => $user->getEmail(),
-            'createdDate' => $user->getCreatedDate()->format(\DateTime::ISO8601),
-            'websiteId' => $user->getWebsite()->getId(),
-            'parentId' => $user->getParent()?->getId()
-        ];
+        return new JsonResponse($this->getUserArray($user), 201, ["Content-Type" => "application/json;charset=UTF-8"]);
+    }
 
-        return new JsonResponse($result, 201, ["Content-Type" => "application/json;charset=UTF-8"]);
+    #[Route('/user/{id}', name: 'get_user', methods: ['GET'])]
+    public function getUserEntity(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $apiKey = $request->headers->get('Authorization');
+        if (!$apiKey) {
+            return new JsonResponse('Authorization header is not found', 401);
+        }
+
+        $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
+        if (!$website) {
+            return new JsonResponse('Invalid authorization key', 403);
+        }
+        $user = $entityManager->find(User::class, $id);
+        if (!$user) {
+            return new JsonResponse('User not found', 404);
+        }
+
+        return new JsonResponse($this->getUserArray($user), 200, ["Content-Type" => "application/json;charset=UTF-8"]);
+    }
+
+    #[Route('/user/{id}', name: 'update_user', methods: ['PUT'])]
+    public function updateUser(int $id, ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $apiKey = $request->headers->get('Authorization');
+        if (!$apiKey) {
+            return new JsonResponse('Authorization header is not found', 401);
+        }
+
+        $website = $entityManager->getRepository(Website::class)->findOneBy(['apiKey' => $apiKey]);
+        if (!$website) {
+            return new JsonResponse('Invalid authorization key', 403);
+        }
+        $user = $entityManager->find(User::class, $id);
+        if (!$user) {
+            return new JsonResponse('User not found', 404);
+        }
+        $data = json_decode($request->getContent(), true);
+        if (!$data) {
+            return new JsonResponse('Invalid json with parameters', 415);
+        }
+        if (!empty($data['firstName'])) {
+            $user->setFirstName($data['firstName']);
+        }
+        if (!empty($data['lastName'])) {
+            $user->setLastName($data['lastName']);
+        }
+        $user->setUpdatedDate(new \DateTime());
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse($this->getUserArray($user), 200, ["Content-Type" => "application/json;charset=UTF-8"]);
     }
 }
